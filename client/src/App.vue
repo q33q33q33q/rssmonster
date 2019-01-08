@@ -2,16 +2,16 @@
   <div id="app">
     <div class="row" style="margin-right:0px;">
       <div class="sidebar col-md-3 col-sm-0" style="position:fixed">
-        <app-quickbar></app-quickbar>
-        <app-sidebar @modal="modalClick"></app-sidebar>
+        <app-quickbar @modal="modalClick"></app-quickbar>
+        <app-sidebar @category="categoryChange" @feed="feedChange" @status="statusChange" @modal="modalClick" :input-arg="arg" :input-category="category" :input-feed="feed"></app-sidebar>
       </div>
       <div class="home col-md-9 offset-md-3 col-sm-12">
-        <app-quickbar></app-quickbar>
-        <app-home></app-home>
+        <app-quickbar @modal="modalClick" @status="statusChange" :input-arg="arg"></app-quickbar>
+        <app-home @search="searchChange" @status="statusChange" @filter="filterChange" :input-arg="arg"></app-home>
       </div>
     </div>
     <!-- Modal -->
-    <app-modal @modal="modalClick" :modal="modal" :input-category="category" :input-feed="feed"></app-modal>
+    <app-modal @modal="modalClick" :modal="modal" :input-arg="arg" :input-category="category" :input-feed="feed"></app-modal>
   </div>
 </template>
 
@@ -117,6 +117,21 @@ export default {
   store: {
     data: "data"
   },
+  data() {
+    return {
+      category: {},
+      feed: {},
+      modal: null,
+      arg: {
+        filter: "full",
+        status: "unread",
+        category: null,
+        feed: null,
+        search: null,
+        refresh: 0
+      }
+    };
+  },
   beforeCreate() {
     //get an overview with the count for all feeds
     this.$http
@@ -142,13 +157,6 @@ export default {
     document.head.querySelector("meta[http-equiv=X-UA-Compatible]").content =
       "IE=edge";
   },
-  data() {
-    return {
-      category: {},
-      feed: {},
-      modal: null
-    };
-  },
   methods: {
     closeModal: function() {
       this.error_msg = "";
@@ -156,6 +164,21 @@ export default {
     },
     modalClick: function(value) {
       this.modal = value;
+    },
+    statusChange: function(value) {
+      this.arg.status = value;
+    },
+    filterChange: function(value) {
+      this.arg.filter = value;
+    },
+    searchChange: function(value) {
+      this.arg.search = value;
+    },
+    categoryChange: function(category) {
+      this.category = category;
+    },
+    feedChange: function(feed) {
+      this.feed = feed;
     },
     lookupFeedById: function(feedId) {
       for (var x = 0; x < this.$store.categories.length; x++) {

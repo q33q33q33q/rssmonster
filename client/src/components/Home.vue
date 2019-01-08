@@ -2,7 +2,7 @@
   <div id="main">
     <div class="subscribe-toolbar">
       <div class="status-toolbar" @click="toggleShowStatus">
-        <p id="status">{{ this.$store.data.status | capitalize }}</p>
+        <p id="status">{{ inputArg.status | capitalize }}</p>
       </div>
       <div v-if="showStatusMenu" class="dropdownmenu" id="status">
         <div class="item" href="#" @click="statusClicked('unread')">
@@ -16,7 +16,7 @@
         </div>
       </div>
       <div class="status-toolbar" @click="toggleShowFilter">
-        <p id="filter">{{ this.$store.data.filter | capitalize }}</p>
+        <p id="filter">{{ inputArg.filter | capitalize }}</p>
       </div>
       <div v-if="showFilterMenu" class="dropdownmenu" id="filter">
         <div class="item" href="#" @click="filterClicked('full')">
@@ -69,11 +69,11 @@
           </div>
 
           <div
-            v-if="$store.data.filter === 'full'"
+            v-if="inputArg.filter === 'full'"
             class="article-content"
             v-html="article.content"
           ></div>
-          <div v-if="$store.data.filter === 'minimal'" class="article-content">
+          <div v-if="inputArg.filter === 'minimal'" class="article-content">
             <p>{{ article.content | stripHTML }}</p>
           </div>
         </div>
@@ -332,6 +332,7 @@ require("waypoints/lib/noframework.waypoints.js");
 import moment from "moment";
 
 export default {
+  props: ["inputArg"],
   data() {
     return {
       distance: 0,
@@ -352,21 +353,20 @@ export default {
     };
   },
   store: {
-    data: "data",
     categories: "categories"
   },
   //watch the data store, when changing reload the article details
   watch: {
-    "$store.data": {
-      handler: function(data) {
+    "inputArg": {
+      handler: function(input) {
         this.$http
           .get("articles", {
             params: {
               //the following arguments are used
-              status: data.status,
-              categoryId: data.category,
-              feedId: data.feed,
-              search: data.search
+              status: input.status,
+              categoryId: input.category,
+              feedId: input.feed,
+              search: input.search
             }
           })
           .then(response => {
@@ -498,7 +498,7 @@ export default {
       });
     },
     markArticleRead(article) {
-      if (this.$store.data.status === "unread") {
+      if (this.inputArg.status === "unread") {
         //make ajax request to change read status
         this.$http.post("manager/marktoread/" + article).then(
           response => {
@@ -601,7 +601,7 @@ export default {
     },
     emitSearchEvent: function() {
       if (!(this.search === undefined || this.search === null)) {
-        this.$store.data.search = this.search;
+        this.$emit('search', this.search);
       }
     },
     toggleShowStatus: function() {
@@ -611,11 +611,11 @@ export default {
       this.showFilterMenu = !this.showFilterMenu;
     },
     statusClicked: function(status) {
-      this.$store.data.status = status;
+      this.$emit('status', status);
       this.toggleShowStatus();
     },
     filterClicked: function(filter) {
-      this.$store.data.filter = filter;
+      this.$emit('filter', filter);
       this.toggleShowFilter();
     }
   },

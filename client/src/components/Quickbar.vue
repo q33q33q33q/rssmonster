@@ -1,7 +1,7 @@
 <template>
   <div class="quickbar view-toolbar">
     <a
-      @click="$store.modal='showcategories'"
+      @click="emitClickEvent('modal','showcategories')"
       id="rssmonster"
       class="view-button"
       data-behavior="view_unread change_view_mode"
@@ -10,7 +10,6 @@
     ></a>
     <a
       v-on:click="loadType('unread')"
-      v-bind:class="{ 'selected':  $store.data.status === 'unread' }"
       id="unread"
       class="view-button"
       title="View unread"
@@ -23,7 +22,6 @@
     </a>
     <a
       v-on:click="loadType('read')"
-      v-bind:class="{ 'selected':  $store.data.status === 'read' }"
       id="read"
       class="view-button selected"
       title="View read"
@@ -36,7 +34,6 @@
     </a>
     <a
       v-on:click="loadType('star')"
-      v-bind:class="{ 'selected':  $store.data.status === 'star' }"
       id="star"
       class="view-button"
       title="View starred"
@@ -59,12 +56,13 @@ div.quickbar a {
 
 <script>
 export default {
-  store: {
-    data: "data"
-  },
+  props: ["inputArg"],
   methods: {
+    emitClickEvent(eventType, value) {
+      this.$emit(eventType, value);
+    },
     loadType: function(status) {
-      this.$store.data.status = status;
+      this.$emit("status", status);
     }
   }
 };
