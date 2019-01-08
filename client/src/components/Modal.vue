@@ -337,11 +337,14 @@ export default {
   //we working on a copy and only update the store once we know for sure the api has returned a 200 status.
   watch: {
     inputCategory() {
-      this.category = JSON.parse(JSON.stringify(this.inputCategory));
-      console.log(this.category);
+      if (this.inputCategory !== undefined) {
+        this.category = JSON.parse(JSON.stringify(this.inputCategory));
+      }
     },
     inputFeed() {
-      this.feed = JSON.parse(JSON.stringify(this.inputFeed));
+      if (this.inputFeed !== undefined) {
+        this.feed = JSON.parse(JSON.stringify(this.inputFeed));
+      }
     }
   },
   store: {

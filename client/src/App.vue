@@ -3,15 +3,34 @@
     <div class="row" style="margin-right:0px;">
       <div class="sidebar col-md-3 col-sm-0" style="position:fixed">
         <app-quickbar @modal="modalClick"></app-quickbar>
-        <app-sidebar @category="categoryChange" @feed="feedChange" @status="statusChange" @modal="modalClick" :input-arg="arg" :input-category="category" :input-feed="feed"></app-sidebar>
+        <app-sidebar
+          @category="categoryChange"
+          @feed="feedChange"
+          @status="statusChange"
+          @modal="modalClick"
+          :input-arg="arg"
+          :input-category="category"
+          :input-feed="feed"
+        ></app-sidebar>
       </div>
       <div class="home col-md-9 offset-md-3 col-sm-12">
         <app-quickbar @modal="modalClick" @status="statusChange" :input-arg="arg"></app-quickbar>
-        <app-home @search="searchChange" @status="statusChange" @filter="filterChange" :input-arg="arg"></app-home>
+        <app-home
+          @search="searchChange"
+          @status="statusChange"
+          @filter="filterChange"
+          :input-arg="arg"
+        ></app-home>
       </div>
     </div>
     <!-- Modal -->
-    <app-modal @modal="modalClick" :modal="modal" :input-arg="arg" :input-category="category" :input-feed="feed"></app-modal>
+    <app-modal
+      @modal="modalClick"
+      :modal="modal"
+      :input-arg="arg"
+      :input-category="category"
+      :input-feed="feed"
+    ></app-modal>
   </div>
 </template>
 
@@ -175,17 +194,28 @@ export default {
       this.arg.search = value;
     },
     categoryChange: function(category) {
-      this.category = category;
+      this.arg.category = category;
+      this.category = this.lookupCategoryById(category);
     },
     feedChange: function(feed) {
-      this.feed = feed;
+      this.arg.feed = feed;
+      this.feed = this.lookupFeedById(feed);
     },
     lookupFeedById: function(feedId) {
       for (var x = 0; x < this.$store.categories.length; x++) {
-        for (var i = 0; i < this.$store.categories[x].feeds.length; i++) {
-          if (this.$store.categories[x].feeds[i].id === feedId) {
-            return this.$store.categories[x].feeds[i];
+        if (this.$store.categories[x].feeds) {
+          for (var i = 0; i < this.$store.categories[x].feeds.length; i++) {
+            if (this.$store.categories[x].feeds[i].id === feedId) {
+              return this.$store.categories[x].feeds[i];
+            }
           }
+        }
+      }
+    },
+    lookupCategoryById: function(categoryId) {
+      for (var x = 0; x < this.$store.categories.length; x++) {
+        if (this.$store.categories[x].id === categoryId) {
+          return this.$store.categories[x];
         }
       }
     }

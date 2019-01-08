@@ -96,8 +96,8 @@
       >
         <div
           class="sidebar-category-main"
-          v-bind:class="{ 'selected': (inputCategory === category.id) && (inputFeed === null) }"
-          v-on:click="loadCategory(category)"
+          v-bind:class="{ 'selected': (inputArg.category === category.id) && (inputArg.feed === null) }"
+          v-on:click="loadCategory(category.id)"
           v-bind:id="category.id"
           v-for="(category, index) in this.$store.categories"
           :key="index"
@@ -123,11 +123,11 @@
             </span>
           </div>
           <div v-if="category.feeds">
-            <div v-if="inputCategory === category.id" class="sidebar-category-feeds">
+            <div v-if="inputArg.category === category.id" class="sidebar-category-feeds">
               <div
                 class="sidebar-category-feed"
-                v-on:click.stop="loadFeed(feed)"
-                v-bind:class="{ 'selected': inputFeed === feed.id }"
+                v-on:click.stop="loadFeed(feed.id)"
+                v-bind:class="{ 'selected': inputArg.feed === feed.id }"
                 v-bind:id="feed.id"
                 v-for="(feed, index) in category.feeds"
                 :key="index"
@@ -166,7 +166,7 @@
           </div>
         </div>
         <div
-          v-if="(inputCategory != null) && (inputFeed == null)"
+          v-if="(inputArg.category != null) && (inputArg.feed == null)"
           @click="emitClickEvent('modal','deletecategory')"
           id="delete"
           class="category-button"
@@ -177,7 +177,7 @@
           </div>
         </div>
         <div
-          v-if="(inputCategory != null) && (inputFeed == null)"
+          v-if="(inputArg.category != null) && (inputArg.feed == null)"
           @click="emitClickEvent('modal','renamecategory')"
           id="rename"
           class="category-button"
@@ -188,7 +188,7 @@
           </div>
         </div>
         <div
-          v-if="(inputCategory != null) && (inputFeed != null)"
+          v-if="(inputArg.category != null) && (inputArg.feed != null)"
           @click="emitClickEvent('modal','deletefeed')"
           id="delete"
           class="category-button"
@@ -199,7 +199,7 @@
           </div>
         </div>
         <div
-          v-if="(inputCategory != null) && (inputFeed != null)"
+          v-if="(inputArg.category != null) && (inputArg.feed != null)"
           @click="emitClickEvent('modal','renamefeed')"
           id="rename"
           class="category-button"
@@ -486,7 +486,7 @@ export default {
       this.$emit('feed', null);
     },
     loadFeed: function(feed) {
-      this.$emit('feed', null);
+      this.$emit('feed', feed);
     },
     loadAll: function() {
       this.$emit('category', null);
