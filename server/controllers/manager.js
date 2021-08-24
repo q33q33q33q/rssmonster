@@ -2,6 +2,8 @@ const Article = require("../models/article");
 const Category = require("../models/category");
 const Feed = require("../models/feed");
 
+const cache = require('../util/cache');
+
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
@@ -12,16 +14,26 @@ exports.getOverview = async (req, res, next) => {
         starInd: 1
       }
     });
+
     const unreadCount = await Article.count({
       where: {
         status: "unread"
       }
     });
+
     const readCount = await Article.count({
       where: {
         status: "read"
       }
     });
+
+    //finally we count using the array with ids
+    const hotCount = await Article.count({
+      where: {
+        url: cache.all()
+      }
+    });
+
     const totalCount = (await readCount) + unreadCount;
 
     const categories = await Category.findAll({
@@ -120,22 +132,25 @@ exports.getOverview = async (req, res, next) => {
     readArray = await toPlain(readCountGrouped);
     unreadArray = await toPlain(unreadCountGrouped);
     starArray = await toPlain(starCountGrouped);
+    //hotArray = await toPlain(hotCountGrouped);
 
     //give each category and feed in the categoriesArray a readCount, unreadCount and starCount
     await categoriesArray.forEach(category => {
       category["readCount"] = 0;
       category["unreadCount"] = 0;
       category["starCount"] = 0;
+      category["hotCount"] = 0;
       if (category["feeds"]) {
         category["feeds"].forEach(feed => {
           feed["readCount"] = 0;
           feed["unreadCount"] = 0;
           feed["starCount"] = 0;
+          feed["hotCount"] = 0;
         });
       }
     });
 
-    //the readArry holds the read count for every categoryId and feedId. For the categoryId we need to sum, for the feedId we can just overwrite.
+    //the readArray holds the read count for every categoryId and feedId. For the categoryId we need to sum, for the feedId we can just overwrite.
     await readArray.forEach(item => {
       //find the index by comparing the categoryId from every element in the readArray, against the category.id in the categoriesArray
       var categoryIndex = categoriesArray.findIndex(
@@ -197,6 +212,7 @@ exports.getOverview = async (req, res, next) => {
       readCount: readCount,
       unreadCount: unreadCount,
       starCount: starCount,
+      hotCount: hotCount,
       categories: categoriesArray
     });
   } catch (err) {
@@ -219,10 +235,11 @@ exports.articleDetails = async (req, res, next) => {
     var articlesArray = articleIds.split(",");
 
     const articles = await Article.findAll({
-      include: [{
-        model: Feed,
-        required: true
-      }],
+      include: [
+        {
+          model: Feed,
+          required: true
+        }],
       order: [
         ["published", sort]
       ],

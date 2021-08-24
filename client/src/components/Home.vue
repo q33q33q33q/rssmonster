@@ -2,33 +2,24 @@
   <div id="main">
     <div id="articles">
       <div :key="article.id" v-bind:id="article.id" class="block" v-for="article in articles">
-        <div class="article">
+        <div class="article" v-bind:class="{'starred': article.starInd == 1, 'hot': article.hotlinks }" v-on:click="bookmark(article.id, $event)">
           <div class="maximal">
-            <div
-              v-bind:class="{'bookmarked': article.starInd == 1}"
-              v-on:click="bookmark(article.id, $event)"
-              @click="$event.target.classList.toggle('bookmarked')"
-              class="bookmark"
-            ></div>
-            <span
-              v-if="article.hotness_count"
-              class="badge badge-pill badge-danger"
-            >{{ article.hotness_count }}</span>
             <h5 class="heading">
               <a target="_blank" :href="article.url" v-text="article.subject"></a>
             </h5>
             <div class="feedname">
+              <span class="published_date">{{ article.published | formatDate }}</span>
+              <span class="break">by</span>
               <span class="feed_name">
                 <a target="_blank" :href="article.feed.url" v-text="article.feed.feedName"></a>
               </span>
-              <span class="break">|</span>
-              <span class="published_date">{{ article.published | formatDate }}</span>
             </div>
           </div>
-
-          <div v-if="store.filter === 'full'" class="article-content" v-html="article.content"></div>
+          <div v-if="store.filter === 'full'" class="article-content">
+            <div class="article-body" v-if="article.content !== '<html><head></head><body>null</body></html>'" v-html="article.content"></div>
+          </div>
           <div v-if="store.filter === 'minimal'" class="article-content">
-            <p>{{ article.content | stripHTML }}</p>
+            <p class="article-body" v-if="article.content !== '<html><head></head><body>null</body></html>'">{{ article.content | stripHTML }}</p>
           </div>
         </div>
       </div>
@@ -85,6 +76,31 @@ div.main {
   margin-top: 50px;
 }
 
+div.block .article.hot .heading, div.block .article.starred .heading {
+  padding-left: 20px;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  background-position: left 0px top 5px;
+}
+
+div.block .article.hot {
+  background-color: #fffff4;
+  border-color: #ffc7c7;
+}
+
+div.block .article.hot .heading {
+  background-image: url("../assets/fire.png");
+}
+
+div.block .article.starred {
+  background-color: #fffafa;
+  border-color: #ffc7c7;
+}
+
+div.block .article.starred .heading {
+  background-image: url("../assets/heart_red.png");
+}
+
 div.block .article {
   padding-top: 4px;
   padding-left: 5px;
@@ -93,16 +109,20 @@ div.block .article {
   border-width: 1px;
   border: 1px solid #ecf0f1;
   border-radius: 2px;
-  background-color: #fbfbfb;
+  background-color: #FBFBFB;
   width: 100%;
 }
 
 div.block div.article-content {
-  color: #51556a;
+  color: #1b1f23;
   font-size: 14px;
   margin-bottom: 5px;
   margin-top: 1px;
   margin-left: 0px;
+}
+
+div.block div.article-body iframe {
+  display: none;
 }
 
 div.article-content img, div.article-content div {
@@ -130,35 +150,12 @@ div.block div.feedname {
   color: #51556a;
 }
 
-div.block .active {
+div.block.active {
   background-color: #ffffe5;
 }
-
 span.break {
   margin-left: 2px;
   margin-right: 2px;
-}
-
-div.block div.bookmark,
-div.block div.bookmarked {
-  height: 29px;
-  background-repeat: no-repeat;
-  float: left;
-  width: 32px;
-  margin-top: -10px;
-  margin-left: -6px;
-  cursor: pointer;
-  background-size: 18px 18px;
-  background-position: 8px 12px;
-  color: #111;
-}
-
-div.block div.bookmark {
-  background-image: url("../assets/heart_black.png");
-}
-
-div.block div.bookmarked {
-  background-image: url("../assets/heart_red.png");
 }
 
 span.badge.badge-danger {
@@ -205,27 +202,27 @@ div.infinite-loading-container {
 }
 
 @media (prefers-color-scheme: dark) {
-  html, body, .home, #main, d#articles, div.block, div.block .article, .article-content, h5.heading, div.block div.feedname, div.infinite-loading-container {
+  #main, #articles, div.block, div.block .article, .article-content, h5.heading, div.block div.feedname, div.infinite-loading-container {
     color: #fff;
-    background: #000;
-    border-color: #000;
+    background: #121212;
+    border-color: #121212;
     border-bottom-color: #fff;
+    background-color: #121212;
   }
 
   div#app {
     background-color: #000;
   }
 
+  div#articles {
+    background-color: #121212;
+  }
+
   div.sidebar {
-    background-color: #13141c;
+    background-color: #121212;
   }
 
-  a, div.block .article h5 a {
-    color: #fff;
-    border-bottom: 1px solid #fff;
-  }
-
-  div.block div.article-content, span.feed_name a {
+  a, div.block .article h5 a, div.block div.article-content, span.feed_name a {
     color: #fff;
   }
 
@@ -241,13 +238,36 @@ div.infinite-loading-container {
     color: #aaa;
   }
 
-  header h1,
-  header h2 {
+  div.block {
+    border-bottom-color: #121212;
+    background: black;
+  }
+
+  div.article h1.heading, div.article h2.heading {
     color: #fff;
   }
 
-  header h1 a {
+  div.article h1.heading a {
     color: #fff;
+  }
+
+  h5.heading a {
+    text-decoration: none !important;
+    border-bottom: none !important;
+  }
+
+  div.article {
+    border-bottom-color: black !important;
+  }
+
+  div.block .article.hot {
+    background-color: #121212;
+    border-color: #121212;
+  }
+
+  div.block .article.starred {
+    background-color: #121212;
+    border-color: #121212;
   }
 
   nav ul li {
@@ -256,6 +276,10 @@ div.infinite-loading-container {
 
   .divider {
     border-bottom: 1px solid #ddd;
+  }
+
+  a:visited, a:active, a:link {
+    color: #18bc9c;
   }
 }
 
@@ -343,9 +367,8 @@ export default {
   },
   methods: {
     handleScroll: function() {
-      let bottomOfWindow =
-        document.documentElement.scrollTop + window.innerHeight ===
-        document.documentElement.offsetHeight;
+      //ceil document.documentElement.scrollTop, because images can have not nicely rounded heights
+      let bottomOfWindow = Math.ceil(document.documentElement.scrollTop) + window.innerHeight === document.documentElement.offsetHeight;
 
       if (bottomOfWindow) {
         //when reaching the bottom of the page and less than 10 articles are in the queue, mark everything as read
@@ -447,25 +470,22 @@ export default {
               var categoryIndex = this.store.categories.findIndex(
                 category => category.id === response.body.feed.categoryId
               );
-              this.store.categories[categoryIndex].unreadCount =
-                this.store.categories[categoryIndex].unreadCount - 1;
-              this.store.categories[categoryIndex].readCount =
-                this.store.categories[categoryIndex].readCount + 1;
-              var feedIndex = this.store.categories[
-                categoryIndex
-              ].feeds.findIndex(feed => feed.id === response.body.feedId);
-              this.store.categories[categoryIndex].feeds[
-                feedIndex
-              ].unreadCount =
-                this.store.categories[categoryIndex].feeds[feedIndex]
-                  .unreadCount - 1;
-              this.store.categories[categoryIndex].feeds[feedIndex].readCount =
-                this.store.categories[categoryIndex].feeds[feedIndex]
-                  .readCount + 1;
-
+              //avoid having any negative numbers
+              if (this.store.categories[categoryIndex].unreadCount != 0) {
+                this.store.categories[categoryIndex].unreadCount = this.store.categories[categoryIndex].unreadCount - 1;
+                this.store.categories[categoryIndex].readCount = this.store.categories[categoryIndex].readCount + 1;
+              }
+              var feedIndex = this.store.categories[categoryIndex].feeds.findIndex(feed => feed.id === response.body.feedId);
+              //avoid having any negative numbers
+              if (this.store.categories[categoryIndex].feeds[feedIndex].unreadCount != 0) {
+                this.store.categories[categoryIndex].feeds[feedIndex].unreadCount = this.store.categories[categoryIndex].feeds[feedIndex].unreadCount - 1;
+                this.store.categories[categoryIndex].feeds[feedIndex].readCount = this.store.categories[categoryIndex].feeds[feedIndex].readCount + 1;
+              }
               //also increase total count
-              this.store.readCount = this.store.readCount + 1;
-              this.store.unreadCount = this.store.unreadCount - 1;
+              if (this.store.unreadCount != 0) {
+                this.store.readCount = this.store.readCount + 1;
+                this.store.unreadCount = this.store.unreadCount - 1;
+              }
             }
           },
           response => {
@@ -477,63 +497,59 @@ export default {
       }
     },
     bookmark(article, event) {
-      //determine if classname already contains bookmarked, if so, the change is unmark
-      if (event.currentTarget.className.indexOf("bookmarked") >= 0) {
-        //make ajax request to change bookmark status
-        this.$http
-          .post("api/manager/markwithstar/" + article, { update: "unmark" })
-          .then(
-            response => {
-              //decrease the star count
-              var categoryIndex = this.store.categories.findIndex(
-                category => category.id === response.body.feed.categoryId
-              );
-              this.store.categories[categoryIndex].starCount =
-                this.store.categories[categoryIndex].starCount - 1;
-              var feedIndex = this.store.categories[
-                categoryIndex
-              ].feeds.findIndex(feed => feed.id === response.body.feedId);
-              this.store.categories[categoryIndex].feeds[feedIndex].starCount =
-                this.store.categories[categoryIndex].feeds[feedIndex]
-                  .starCount - 1;
+      //do not bookmark when clicking on hyperlinks
+      if (event.srcElement.nodeName != "A") {
 
-              //also increase total count
-              this.store.starCount = this.store.starCount - 1;
-            },
-            response => {
-              /* eslint-disable no-console */
-              console.log("oops something went wrong", response);
-              /* eslint-enable no-console */
-            }
-          );
-      } else {
-        //make ajax request to change bookmark status
-        this.$http
-          .post("api/manager/markwithstar/" + article, { update: "mark" })
-          .then(
-            response => {
-              //increase the star count
-              var categoryIndex = this.store.categories.findIndex(
-                category => category.id === response.body.feed.categoryId
-              );
-              this.store.categories[categoryIndex].starCount =
-                this.store.categories[categoryIndex].starCount + 1;
-              var feedIndex = this.store.categories[
-                categoryIndex
-              ].feeds.findIndex(feed => feed.id === response.body.feedId);
-              this.store.categories[categoryIndex].feeds[feedIndex].starCount =
-                this.store.categories[categoryIndex].feeds[feedIndex]
-                  .starCount + 1;
+        //determine if classname already contains bookmarked, if so, the change is unmark
+        if (event.currentTarget.className.indexOf("starred") >= 0) {
+          //make ajax request to change bookmark status
+          this.$http
+            .post("api/manager/markwithstar/" + article, { update: "unmark" })
+            .then(
+              response => {
+                //decrease the star count
+                var categoryIndex = this.store.categories.findIndex(
+                  category => category.id === response.body.feed.categoryId
+                );
+                this.store.categories[categoryIndex].starCount = this.store.categories[categoryIndex].starCount - 1;
+                var feedIndex = this.store.categories[categoryIndex].feeds.findIndex(feed => feed.id === response.body.feedId);
+                this.store.categories[categoryIndex].feeds[feedIndex].starCount = this.store.categories[categoryIndex].feeds[feedIndex].starCount - 1;
 
-              //also increase total count
-              this.store.starCount = this.store.starCount + 1;
-            },
-            response => {
-              /* eslint-disable no-console */
-              console.log("oops something went wrong", response);
-              /* eslint-enable no-console */
-            }
-          );
+                //also increase total count
+                this.store.starCount = this.store.starCount - 1;
+              },
+              response => {
+                /* eslint-disable no-console */
+                console.log("oops something went wrong", response);
+                /* eslint-enable no-console */
+              }
+            );
+        } else {
+          //make ajax request to change bookmark status
+          this.$http
+            .post("api/manager/markwithstar/" + article, { update: "mark" })
+            .then(
+              response => {
+                //increase the star count
+                var categoryIndex = this.store.categories.findIndex(
+                  category => category.id === response.body.feed.categoryId
+                );
+                this.store.categories[categoryIndex].starCount = this.store.categories[categoryIndex].starCount + 1;
+                var feedIndex = this.store.categories[categoryIndex].feeds.findIndex(feed => feed.id === response.body.feedId);
+                this.store.categories[categoryIndex].feeds[feedIndex].starCount = this.store.categories[categoryIndex].feeds[feedIndex].starCount + 1;
+
+                //also increase total count
+                this.store.starCount = this.store.starCount + 1;
+              },
+              response => {
+                /* eslint-disable no-console */
+                console.log("oops something went wrong", response);
+                /* eslint-enable no-console */
+              }
+            );
+        }
+        //toggle div element class
+        event.currentTarget.classList.toggle('starred');
       }
     }
   },
@@ -555,7 +571,11 @@ export default {
     },
     formatDate: function(value) {
       if (value) {
-        return moment(String(value)).fromNow();
+        //use fromNow function to calculate time from article published
+        value = moment(String(value)).fromNow();
+        //uppercase first character of sentence
+        value = value.charAt(0).toUpperCase() + value.slice(1);
+        return value;
       }
     }
   }

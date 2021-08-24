@@ -2,6 +2,8 @@ const Sequelize = require("sequelize");
 
 const sequelize = require("../util/database");
 
+const Feed = require("./feed");
+
 const Category = sequelize.define(
   "categories",
   {
@@ -21,9 +23,12 @@ const Category = sequelize.define(
     }
   },
   {
-    charset: "utf8",
-    collate: "utf8_unicode_ci"
+    charset: "utf8mb4",
+    collate: "utf8mb4_unicode_ci"
   }
 );
+
+//add feed associations
+Category.hasMany(Feed);
 
 module.exports = Category;

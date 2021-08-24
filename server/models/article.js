@@ -4,6 +4,8 @@ const sequelize = require("../util/database");
 
 const Feed = require("./feed");
 
+const cache = require('../util/cache');
+
 const Article = sequelize.define(
   "articles",
   {
@@ -30,10 +32,19 @@ const Article = sequelize.define(
       allowNull: false,
       defaultValue: "unread"
     },
-    starInd: Sequelize.INTEGER,
+    starInd: {
+      type: Sequelize.INTEGER,
+      defaultValue: 0
+    },
     url: {
       type: Sequelize.STRING(1024),
       allowNull: false
+    },
+    hotlinks: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return cache.get(this.url);
+      }
     },
     imageUrl: Sequelize.STRING(1024),
     subject: {
@@ -50,8 +61,8 @@ const Article = sequelize.define(
     }
   },
   {
-    charset: "utf8",
-    collate: "utf8_unicode_ci"
+    charset: "utf8mb4",
+    collate: "utf8mb4_unicode_ci"
   }
 );
 

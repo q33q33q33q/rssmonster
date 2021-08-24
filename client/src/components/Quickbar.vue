@@ -27,8 +27,8 @@
       id="read"
       class="view-button"
       title="View read"
-      data-behavior="view_all change_view_mode"
-      data-view-mode="view_all"
+      data-behavior="view_read change_view_mode"
+      data-view-mode="view_read"
       data-remote="true"
     >
       <i class="far fa-circle" data-fa-transform="down-0 shrink-0 left-5"></i>
@@ -47,15 +47,21 @@
       <i class="far fa-heart" data-fa-transform="down-0 shrink-0 left-5"></i>
       Star {{ this.store.starCount }}
     </a>
+    <a
+      v-on:click="loadType('hot')"
+      v-bind:class="{ 'selected':  store.currentSelection.status == 'hot' }"
+      id="hot"
+      class="view-button"
+      title="View hot"
+      data-behavior="view_hot change_view_mode"
+      data-view-mode="view_hot"
+      data-remote="true"
+    >
+      <i class="far fa-heart" data-fa-transform="down-0 shrink-0 left-5"></i>
+      Hot {{ this.store.hotCount }}
+    </a>
   </div>
 </template>
-
-<style>
-div.quickbar a {
-  font-size: 12px;
-  cursor: pointer;
-}
-</style>
 
 <script>
 import store from "../store";
@@ -77,6 +83,11 @@ export default {
 };
 </script>
 <style>
+div.quickbar a {
+  font-size: 12px;
+  cursor: pointer;
+}
+
 .view-toolbar {
   width: 100%;
   background-color: #31344B;
@@ -126,7 +137,8 @@ a#title.view-button {
 
 a#unread.view-button,
 a#star.view-button,
-a#read.view-button {
+a#read.view-button,
+a#hot.view-button {
   border-left: 1px solid transparent;
   border-color: #dcdee0;
   cursor: pointer;
@@ -140,9 +152,17 @@ a#read.view-button {
   .view-toolbar,
   .view-button {
     color: #fff;
-    background: #000;
+    background: #3a3a3a;
     border-color: #000;
+  }
+
+  a#rssmonster.view-button,
+  a#unread.view-button,
+  a#star.view-button,
+  a#read.view-button,
+  a#hot.view-button {
     border-bottom: 1px solid #fff;
   }
+
 }
 </style>

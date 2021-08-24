@@ -1,19 +1,20 @@
 ## RSSMonster
-
-[![Build Status](https://travis-ci.org/pietheinstrengholt/rssmonster.svg?branch=master)](https://travis-ci.org/pietheinstrengholt/rssmonster/)
-[![License](https://img.shields.io/github/license/pietheinstrengholt/rssmonster.svg)](https://www.github.com/pietheinstrengholt/rssmonster/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
+[![Azure Static Web Apps CI/CD](https://github.com/pietheinstrengholt/rssmonster/actions/workflows/azure-static-web-apps-client.yml/badge.svg)](https://github.com/pietheinstrengholt/rssmonster/actions/workflows/azure-static-web-apps-client.yml)
+[![Azure Web App CI/CD](https://github.com/pietheinstrengholt/rssmonster/actions/workflows/azure-web-app-server.yml/badge.svg)](https://github.com/pietheinstrengholt/rssmonster/actions/workflows/azure-web-app-server.yml)
+[![Docker](https://img.shields.io/docker/pulls/pietheinstrengholt/rssmonster.svg)](https://hub.docker.com/r/pietheinstrengholt/rssmonster/builds)
 
 Copyright (c) 2021 Piethein Strengholt, piethein@strengholt-online.nl
 
 RSSMonster is an easy to use web-based RSS aggregator, created as an alternative for Google Reader.
-RSSMonster features a lightweight fluid responsive design. The font-end has been written in JavaScript (VueJS) and the back-end in Express (NodeJS). It also uses the Twitter Boostrap framework. Several features are implemented such as marking as read when scrolling, drag and drop style manage feeds, json events, etc. RSSMonster is compatible with the Fever API. Feel free to add any contributions or new features.
+RSSMonster features a lightweight fluid responsive design. The font-end has been written in JavaScript (VueJS) and the back-end in Express (NodeJS). It also uses the Twitter Bootstrap framework. Several features are implemented such as progressive web app support, marking as read when scrolling, hotlinks, drag and drop style for managing your feeds, dark mode, and more! RSSMonster is compatible with the Fever API. Feel free to add any contributions or new features.
 
 ![Screenshot](client/src/assets/screenshots/screenshot01.png)
 
 ### Prerequisites
-* NodeJS 10.x
+* NodeJS 14.x or higher
 * Git
-* A Mysql installation (other databases will also work with a bit of configuration)
+* A Mysql installation (other databases will as well with some configuration)
 
 ### How to get everything installed
 * Clone this repository `git clone https://github.com/pietheinstrengholt/rssmonster.git .`
@@ -22,11 +23,12 @@ RSSMonster features a lightweight fluid responsive design. The font-end has been
 * Edit `.env` inside the `server` folder and enter your Mysql or Database server login data (at least fill DB_DATABASE, DB_USERNAME and DB_PASSWORD).
 * Edit `.env` inside the `client` folder. Change the VUE_APP_HOSTNAME so it points to the back-end.
 * Run `./node_modules/.bin/sequelize db:migrate && ./node_modules/.bin/sequelize db:seed:all` in side the `server` folder. this will add all needed database tables and content to your mysql database. Alternatively you can also uncomment the `//force:` true in the app.js inside the server folder to create the schema structure.
+* Optional: Add a cronjob to crawl http://localhost/api/crawl every 5 minutes.
 
 ### Development
 If you would like to run RSSMonster in development mode I recommend to run:
 - Inside the client folder: `npm run serve`.
-- Inside the server folder: `npm run start`.
+- Inside the server folder: `npm run debug`.
 
 ### Production
 If you would like to run RSSMonster in production mode I recommend to run:
@@ -41,8 +43,8 @@ If you would like to run RSSMonster in production mode I recommend to run:
 - The client will be running on port 8080 and communication with the backend takes place via 3000. Make sure these ports aren't being used. The mysql database is accessible via port 3307.
 
 ### Docker for production
-The production version has the server and client combined into a single container. The VueJS is also compiled into an optimized version. To build this single image, run the following command: `docker build .`
-Lastly you need to run the docker container. You need to provide the correct environment variables for the database server to connect to. Here's is an example: `docker run -d -t -i -e NODE_ENV=production -e DB_HOSTNAME=localhost -e DB_DATABASE=rssmonster -e DB_USERNAME=rssmonser -e DB_PASSWORD=password -p 3000:3000`
+The production version has the server and client combined into a single container. The VueJS is also compiled into an optimized version. To build this single image, run the following command: `docker build -t rssmonster .`
+Lastly you need to run the docker container. You need to provide the correct environment variables for the database server to connect to. Here's is an example: `docker run -d -t -i -e NODE_ENV=production -e DB_HOSTNAME=localhost -e DB_DATABASE=rssmonster -e DB_USERNAME=rssmonser -e DB_PASSWORD=password -p 3000:3000 rssmonster`
 
 ### AWS Beanstalk
 - Setup your AWS Security credentials: https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html
@@ -71,7 +73,3 @@ The following scripts and plug-ins are used within RSSMonster
 * VueJS: https://vuejs.org/
 * Vue infinite scrolling: https://github.com/PeachScript/vue-infinite-loading
 * Waypoints: https://github.com/imakewebthings/waypoints
-
-#### TODO
-- Change dist location when building VueJS to ../../server
-- Implement settings (default category on initial load, ASC or DESC sort, etc.)

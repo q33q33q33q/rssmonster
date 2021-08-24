@@ -21,7 +21,7 @@
 
       <div @click="emitClickEvent('modal','newfeed')" class="option" id="addnew">
         <span class="glyphicon">
-          <v-icon name="plus"/>
+          <v-icon name="plus-square"/>
         </span>Add new feed
       </div>
 
@@ -43,20 +43,6 @@
         </span>
       </div>
       <div
-        v-on:click="loadType('read')"
-        v-bind:class="{ 'selected':  store.currentSelection.status === 'read' }"
-        id="read"
-        class="sidebar-category-top"
-      >
-        <span class="glyphicon">
-          <v-icon name="circle" scale="0.8"/>
-        </span>
-        <span class="title">Read</span>
-        <span class="badge-unread">
-          <span class="badge">{{ this.store.readCount }}</span>
-        </span>
-      </div>
-      <div
         v-on:click="loadType('star')"
         v-bind:class="{ 'selected':  store.currentSelection.status === 'star' }"
         id="star"
@@ -70,6 +56,35 @@
           <span class="badge">{{ this.store.starCount }}</span>
         </span>
       </div>
+      <div
+        v-on:click="loadType('hot')"
+        v-bind:class="{ 'selected':  store.currentSelection.status === 'hot' }"
+        id="hot"
+        class="sidebar-category-top"
+      >
+        <span class="glyphicon">
+          <v-icon name="fire" scale="0.8"/>
+        </span>
+        <span class="title">Hot</span>
+        <span class="badge-unread">
+          <span class="badge">{{ this.store.hotCount }}</span>
+        </span>
+      </div>
+      <div
+        v-on:click="loadType('read')"
+        v-bind:class="{ 'selected':  store.currentSelection.status === 'read' }"
+        id="read"
+        class="sidebar-category-top"
+      >
+        <span class="glyphicon">
+          <v-icon name="circle" scale="0.8"/>
+        </span>
+        <span class="title">Read</span>
+        <span class="badge-unread">
+          <span class="badge">{{ this.store.readCount }}</span>
+        </span>
+      </div>
+
       <div>
         <p class="title">All</p>
       </div>
@@ -84,21 +99,20 @@
         </span>
         <span class="title">Load all categories</span>
         <span class="badge-unread">
-          <span
-            v-if="store.currentSelection.status === 'unread'"
-            class="badge white"
-          >{{ unreadCount }}</span>
+          <span v-if="store.currentSelection.status === 'unread'" class="badge white">{{ unreadCount }}</span>
           <span v-if="store.currentSelection.status === 'read'" class="badge white">{{ readCount }}</span>
           <span v-if="store.currentSelection.status === 'star'" class="badge white">{{ starCount }}</span>
+          <span v-if="store.currentSelection.status === 'hot'" class="badge white">{{ hotCount }}</span>
         </span>
       </div>
       <div>
-        <p class="title">Categories</p>
+        <p v-if="store.currentSelection.status != 'hot'" class="title">Categories</p>
       </div>
-      <draggable
+      <draggable 
         :list="this.store.categories"
         class="dragArea"
-        :options="{group:{ name:'category', pull:'clone', put:false}}"
+        v-bind="{group:{ name:'category', pull:'clone', put:false}}"
+        v-if="store.currentSelection.status != 'hot'"
         @end="updateSortOrder"
       >
         <div
@@ -166,13 +180,10 @@
           </div>
         </div>
       </draggable>
-      <div>
-        <p class="title">Options</p>
-      </div>
       <div class="category-options">
         <div @click="emitClickEvent('modal','newcategory')" id="add" class="category-button">
           <div>
-            <v-icon name="plus"/>
+            <v-icon name="plus-square"/>
             <div class="text">Add</div>
           </div>
         </div>
@@ -183,7 +194,7 @@
           class="category-button"
         >
           <div>
-            <v-icon name="trash"/>
+            <v-icon name="trash-alt"/>
             <div class="text">Delete</div>
           </div>
         </div>
@@ -194,7 +205,7 @@
           class="category-button"
         >
           <div>
-            <v-icon name="pen"/>
+            <v-icon name="edit"/>
             <div class="text">Edit</div>
           </div>
         </div>
@@ -205,7 +216,7 @@
           class="category-button"
         >
           <div>
-            <v-icon name="trash"/>
+            <v-icon name="trash-alt"/>
             <div class="text">Delete</div>
           </div>
         </div>
@@ -216,7 +227,7 @@
           class="category-button"
         >
           <div>
-            <v-icon name="pen"/>
+            <v-icon name="edit"/>
             <div class="text">Edit</div>
           </div>
         </div>
@@ -241,11 +252,15 @@ div.sidebar-category-top {
   padding: 4px 4px 4px 12px;
 }
 
+div#refresh.option, div#addnew.option, div#addnew.option {
+  background-color: #6f79d3;
+}
+
 span.badge.white {
   float: right;
   color: #fff;
   background-color: transparent !important;
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
 sidebar-category-main {
@@ -255,7 +270,6 @@ sidebar-category-main {
 span.glyphicon {
   float: left;
   margin-right: 5px;
-  margin-top: -2px;
 }
 
 span.title {
@@ -270,7 +284,7 @@ span.badge-unread {
   float: right;
   position: absolute;
   right: 28px;
-  margin-top: -23px;
+  margin-top: -25px;
 }
 
 div.sidebar-category-top,
@@ -328,16 +342,11 @@ div#mark-all-as-read {
   border-radius: 0px 0px 4px 4px;
 }
 
-div#refresh.option {
-  background-color: #6f79d3;
-}
-
 div#mark-all-as-read {
   background-color: #464f9e;
 }
 
 div#addnew.option {
-  background-color: #51556a;
   margin-right: 60px;
   min-width: 165px;
 }
@@ -368,13 +377,14 @@ div#monster p {
 }
 
 div.category-options {
+  margin-top: 10px;
   margin-bottom: 20px;
   height: 40px;
   width: 105%;
 }
 
 div.category-button {
-  margin-left: 12px;
+  margin-left: 8%;
   height: 44px;
   color: #fff;
   border-radius: 4px;
@@ -383,20 +393,22 @@ div.category-button {
   text-align: center;
 }
 
-div.category-button#add {
-  background-color: #6f79d3;
-}
+@media (prefers-color-scheme: dark) {
+  div.category-button#add, div.category-button#delete, div.category-button#rename {
+    background-color: #464646;
+  }
 
-div.category-button#delete {
-  background-color: #6f79d3;
-}
+  div#refresh.option, div#addnew.option, div#addnew.option {
+    background-color: #535353;
+  }
 
-div.category-button#rename {
-  background-color: #6f79d3;
+  div#mark-all-as-read {
+    background-color: #606060;
+  }
 }
 
 div.category-button div.text {
-  font-size: 12px;
+  font-size: 13px;
   margin-top: 3px;
 }
 
@@ -418,7 +430,8 @@ export default {
       refreshing: false,
       unreadCount: 0,
       readCount: 0,
-      starCount: 0
+      starCount: 0,
+      hotCount: 0
     };
   },
   components: {

@@ -13,6 +13,9 @@
       <div class="item" href="#" @click="statusClicked('star')">
         <p>Star</p>
       </div>
+      <div class="item" href="#" @click="statusClicked('hot')">
+        <p>Hot</p>
+      </div>
     </div>
     <div class="status-toolbar" @click="toggleShowFilter">
       <p id="filter">{{ this.store.filter | capitalize }}</p>
@@ -67,7 +70,7 @@
   overflow: hidden;
   background-color: #eff1f3;
   position: fixed;
-  margin-left: -18px;
+  margin-left: -15px;
 }
 
 .search-wrap {
@@ -149,7 +152,7 @@
   .status-toolbar,
   .dropdownmenu .item {
     color: #fff;
-    background: #000;
+    background: #3a3a3a;
     border-color: #000;
     border-bottom: 1px solid #fff;
   }
@@ -159,11 +162,9 @@
     border-right: 1px solid #fff;
     border-left: 1px solid #fff;
   }
-
 }
 
 </style>
-
 
 <script>
 import store from "../store";

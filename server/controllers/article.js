@@ -2,6 +2,8 @@ const Article = require("../models/article");
 const Feed = require("../models/feed");
 const Setting = require("../models/setting");
 
+const cache = require('../util/cache');
+
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
@@ -79,6 +81,25 @@ exports.getArticles = async (req, res, next) => {
             [Op.like]: search
           },
           starInd: 1
+        }
+      });
+    }
+
+    //if hot is set, then use an inner join and no separate query, and no feedId arguments
+    if (status == "hot") {
+
+      //finally we count using the array with ids
+      articles = await Article.findAll({
+        attributes: ["id"],
+        order: [["published", sort]],
+        where: {
+          subject: {
+            [Op.like]: search
+          },
+          content: {
+            [Op.like]: search
+          },
+          url: cache.all()
         }
       });
     }
