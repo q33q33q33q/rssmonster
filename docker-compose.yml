@@ -11,7 +11,9 @@ services:
     ports:
       - 8080:8080
     environment:
-      NODE_ENV: development
+      VITE_VUE_APP_HOSTNAME: http://server:3000
+      VITE_NODE_ENV: development
+      VITE_BASE_URL: /
       PORT: 8080
     working_dir: /app
     volumes:
@@ -20,6 +22,7 @@ services:
       - ./client/src:/app/src
     links:
       - server:server
+    hostname: client
 
   server:
     depends_on:
@@ -48,6 +51,7 @@ services:
       - ./server/seeders:/app/seeders
     links:
       - mysql:mysql
+    hostname: server
 
   mysql:
     container_name: mysqldb
@@ -59,7 +63,7 @@ services:
       MYSQL_USER: "rssmonster"
       MYSQL_PASSWORD: "password"
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - /var/lib/mysql
     restart: unless-stopped

@@ -1,22 +1,12 @@
-const Sequelize = require("sequelize");
+import Sequelize from 'sequelize';
+import { sequelize } from '../util/database.js';
 
-const sequelize = require("../util/database");
-
-const Article = require("./article");
-
-const Hotlink = sequelize.define(
+export const Hotlink = sequelize.define(
   "hotlinks",
   {
     url: {
       type: Sequelize.STRING,
-      allowNull: false,
-      references: {
-        // This is a reference to another model
-        model: Article,
-
-        // This is the column name of the referenced model
-        key: "url"
-      }
+      allowNull: false
     }
   },
   {
@@ -29,4 +19,4 @@ const Hotlink = sequelize.define(
 //sequelize assumes a primary key
 Hotlink.removeAttribute('id');
 
-module.exports = Hotlink;
+export default Hotlink;

@@ -1,9 +1,7 @@
-const Setting = require("../models/setting");
-
-const Sequelize = require("sequelize");
+import Setting from "../models/setting.js";
 
 //the getArticles function returns an array with all the article ids
-exports.getSettings = async (req, res, next) => {
+export const getSettings = async (req, res, next) => {
   try {
     //set default values
     var categoryId = "%";
@@ -34,3 +32,7 @@ exports.getSettings = async (req, res, next) => {
     return res.status(500).json(err);
   }
 };
+
+export default {
+  getSettings
+}
