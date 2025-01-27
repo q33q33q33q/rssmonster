@@ -3,7 +3,7 @@
     <h5 class="mobile-title">Options</h5>
     <div class="close" data-dismiss="modal" aria-label="Close" @click="closeModal">
       <span class="glyphicon">
-        <v-icon name="times" scale="1.2"/>
+        <BootstrapIcon icon="x-square-fill" variant="light" />
       </span>
     </div>
     <div class="overlay-content" id="mobile">
@@ -31,25 +31,28 @@
         </li>
       </ul>
       <p class="content-header">Select how the articles should be displayed</p>
-      <button
-        @click="store.filter = 'full'"
-        type="button"
-        class="btn btn-primary content"
-      >Full content</button>
-      <button
-        @click="store.filter = 'minimal'"
-        type="button"
-        class="btn btn-primary content"
-      >Minimal content</button>
+      <button @click="store.filter = 'full'" type="button" class="btn btn-primary content">Full content</button>
+      <button @click="store.filter = 'minimal'" type="button" class="btn btn-primary content">Minimal content</button>
+
+      <p class="content-header">Refresh feeds</p>
+      <button @click="refreshFeeds()" type="button" class="btn btn-danger">Refresh feeds</button>
+      <br>      
 
       <p class="content-header">Click the button below to add a new feed</p>
       <button @click="showNewFeed()" type="button" class="btn btn-primary">Add new feed</button>
+      <br>
+
+      <p class="content-header">Click the button below to enable notifications</p>
+      <button @click="subscribeNotifications()" type="button" class="btn btn-danger">Subscribe to notifications</button>
+      <br><br>
+
+      <button @click="closeModal()" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
       <br><br>
     </div>
   </div>
 </template>
 
-<style>
+<style scoped>
 @media screen and (max-height: 450px) {
   .overlay a {
     font-size: 20px;
@@ -89,11 +92,11 @@
 }
 
 span.close {
-  color: #FFF !important;
-  opacity: none !important;
+  color: #FFF;
+  opacity: none;
 }
 
-.overlay-content ul.categories {
+.overlay-content .categories {
   list-style-type: none;
   text-indent: 4px;
   padding-left: 0px;
@@ -101,7 +104,7 @@ span.close {
 }
 
 .overlay-content li.category {
-  background-color: #464f9e;
+  background-color: #9f9f9f;
   border-radius: 4px;
   color: #fff;
   padding: 0px;
@@ -118,7 +121,7 @@ p.content-header {
 }
 
 .overlay-content li.category.selected {
-  background-color: #18bc9c;
+  background-color: #3b4651;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -138,7 +141,6 @@ p.content-header {
       background-color: #606060;
   }
 }
-
 </style>
 
 <script>
@@ -161,6 +163,17 @@ export default {
     showNewFeed() {
       this.emitClickEvent("mobile", null);
       this.$emit("modal", "newfeed");
+    },
+    refreshFeeds() {
+      this.$emit('refresh');
+    },
+    subscribeNotifications() {
+      //register service worker
+      Notification.requestPermission().then(function(permission) {
+        if (permission !== 'granted') {
+          throw new Error('Permission not granted for Notification')
+        }
+      });
     }
   }
 };

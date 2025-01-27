@@ -1,27 +1,24 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Azure Web App
 
 on:
   push:
     branches:
       - master
-  workflow_dispatch:
+    paths-ignore:
+      - 'client/**'
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-    - name: Set up Node.js version
-      uses: actions/setup-node@v1
-      with:
-        node-version: '14.x'
-
-    - name: npm install, build, and test
+    - name: Install packages and build
       run: |
         npm install
         npm run build --if-present
@@ -29,11 +26,14 @@ jobs:
       env:
         CI: true
 
+    - name: Zip artifact for deployment
+      run: cd server && zip -r ../release.zip .
+
     - name: Upload artifact for deployment job
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: node-app
-        path: server/
+        path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -44,11 +44,14 @@ jobs:
 
     steps:
     - name: Download artifact from build job
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: node-app
 
-    - name: 'Deploy to Azure Web App'
+    - name: Unzip artifact for deployment
+      run: unzip release.zip
+
+    - name: Deploy to Azure Web App
       id: deploy-to-webapp
       uses: azure/webapps-deploy@v2
       with:
@@ -56,3 +59,6 @@ jobs:
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_2dd7d8e7c60b483f86aabb734cd49aa0 }}
         package: .
+
+    - name: Delete zip file
+      run: rm release.zip

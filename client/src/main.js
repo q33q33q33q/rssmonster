@@ -1,49 +1,28 @@
-import Vue from 'vue';
-import VueResource from 'vue-resource';
+import {createApp} from 'vue'
 import App from './App.vue';
-
-//import bootstrap css
-import './assets/css/bootstrap.min.css';
-
-//add VueResource in order to make API calls
-Vue.use(VueResource);
-
-// only import the icons you use to reduce bundle size
-import 'vue-awesome/icons/circle';
-import 'vue-awesome/icons/dot-circle';
-import 'vue-awesome/icons/folder';
-import 'vue-awesome/icons/rss-square';
-import 'vue-awesome/icons/plus-square';
-import 'vue-awesome/icons/trash-alt';
-import 'vue-awesome/icons/edit';
-import 'vue-awesome/icons/sync';
-import 'vue-awesome/icons/spinner';
-import 'vue-awesome/icons/heart';
-import 'vue-awesome/icons/star';
-import 'vue-awesome/icons/check-square';
-import 'vue-awesome/icons/fire';
-import 'vue-awesome/icons/times';
-
-import Icon from 'vue-awesome/components/Icon';
 
 //progressive web app
 import './registerServiceWorker'
 
-// globally (in your main .js file)
-Vue.component('v-icon', Icon)
+import { BootstrapIcon } from '@dvuckovic/vue3-bootstrap-icons'
+import { injectBootstrapIcons } from '@dvuckovic/vue3-bootstrap-icons/utils'
+import BootstrapIcons from 'bootstrap-icons/bootstrap-icons.svg?raw'
+import '@dvuckovic/vue3-bootstrap-icons/dist/style.css'
 
-//get app hostname location from the .env
-Vue.http.options.root = process.env.VUE_APP_HOSTNAME;
+injectBootstrapIcons(BootstrapIcons)
 
-//init VueJS
-new Vue({
-	el: '#app',
-	render: h => h(App)
-});
+// create an instance using the function
+const app = createApp(App)
+
+// Global component registration.
+app.component('BootstrapIcon', BootstrapIcon);
 
 //enable development environment when NODE_ENV is set to development
-if (process.env.NODE_ENV == 'development') {
-	Vue.config.devtools = true;
-	Vue.config.debug = true;
-	Vue.config.silent = true;
+if (import.meta.env.VITE_NODE_ENV == 'development') {
+	app.config.devtools = true;
+	app.config.debug = true;
+	app.config.silent = true;
 }
+
+// no dollar sign
+app.mount('#app');

@@ -1,13 +1,12 @@
-const Article = require("../models/article");
-const Category = require("../models/category");
-const Feed = require("../models/feed");
+import Article from "../models/article.js";
+import Category from "../models/category.js";
+import Feed from "../models/feed.js";
 
-const cache = require('../util/cache');
+import cache from '../util/cache.js';
 
-const Sequelize = require("sequelize");
-const Op = Sequelize.Op;
+import Sequelize from "sequelize";
 
-exports.getOverview = async (req, res, next) => {
+export const getOverview = async (req, res, next) => {
   try {
     const starCount = await Article.count({
       where: {
@@ -128,10 +127,10 @@ exports.getOverview = async (req, res, next) => {
 
     //Sequelize raw: true or plain: true results into errors, so we will use the custom toPlain function here
     //we need to manipulate the results, so it is required to transform these into plain Array's
-    categoriesArray = await toPlain(categories);
-    readArray = await toPlain(readCountGrouped);
-    unreadArray = await toPlain(unreadCountGrouped);
-    starArray = await toPlain(starCountGrouped);
+    var categoriesArray = await toPlain(categories);
+    var readArray = await toPlain(readCountGrouped);
+    var unreadArray = await toPlain(unreadCountGrouped);
+    var starArray = await toPlain(starCountGrouped);
     //hotArray = await toPlain(hotCountGrouped);
 
     //give each category and feed in the categoriesArray a readCount, unreadCount and starCount
@@ -221,7 +220,7 @@ exports.getOverview = async (req, res, next) => {
   }
 };
 
-exports.articleDetails = async (req, res, next) => {
+export const articleDetails = async (req, res, next) => {
   try {
     const articleIds = req.body.articleIds;
     const sort = req.body.sort;
@@ -261,7 +260,7 @@ exports.articleDetails = async (req, res, next) => {
   }
 };
 
-exports.articleMarkToRead = async (req, res, next) => {
+export const articleMarkToRead = async (req, res, next) => {
   try {
     const articleId = req.params.articleId;
     const article = await Article.findByPk(articleId, {
@@ -288,7 +287,7 @@ exports.articleMarkToRead = async (req, res, next) => {
   }
 };
 
-exports.articleMarkToUnread = async (req, res, next) => {
+export const articleMarkToUnread = async (req, res, next) => {
   try {
     const articleId = req.params.articleId;
     const article = await Article.findByPk(articleId, {
@@ -315,7 +314,7 @@ exports.articleMarkToUnread = async (req, res, next) => {
   }
 };
 
-exports.articleMarkWithStar = async (req, res, next) => {
+export const articleMarkWithStar = async (req, res, next) => {
   try {
     const articleId = req.params.articleId;
     const update = req.body.update;
@@ -361,7 +360,7 @@ exports.articleMarkWithStar = async (req, res, next) => {
   }
 };
 
-exports.articleMarkAllAsRead = async (req, res, next) => {
+export const articleMarkAllAsRead = async (req, res, next) => {
   try {
     await Article.update({
       status: "read"
@@ -377,8 +376,8 @@ exports.articleMarkAllAsRead = async (req, res, next) => {
   }
 };
 
-exports.categoryUpdateOrder = async (req, res, next) => {
-  //categories are received in the prefered order
+export const categoryUpdateOrder = async (req, res, next) => {
+  //categories are received in the preferred order
   const order = req.body.order;
 
   if (order === undefined) {
@@ -390,7 +389,7 @@ exports.categoryUpdateOrder = async (req, res, next) => {
   try {
     if (order.length > 0) {
       //start counting
-      count = 0;
+      var count = 0;
       order.forEach(item => {
         Category.update({
           categoryOrder: count
@@ -411,12 +410,12 @@ exports.categoryUpdateOrder = async (req, res, next) => {
   }
 };
 
-exports.feedChangeCategory = async (req, res, next) => {
-  //categories are received in the prefered order
+export const feedChangeCategory = async (req, res, next) => {
+  //categories are received in the preferred order
   const feedId = req.body.feedId;
   const categoryId = req.body.categoryId;
 
-  if (feedId === undefined || feedId === categoryId) {
+  if (feedId === undefined || categoryId === undefined) {
     return res.status(404).json({
       message: "feedId or categoryId is not set"
     });
@@ -424,8 +423,9 @@ exports.feedChangeCategory = async (req, res, next) => {
 
   try {
     const feed = await Feed.findByPk(feedId);
+    const category = await Category.findByPk(categoryId);
 
-    if (feed) {
+    if (feed && category) {
       feed
         .update({
           categoryId: req.body.categoryId
@@ -438,3 +438,14 @@ exports.feedChangeCategory = async (req, res, next) => {
     return res.status(500).json(err);
   }
 };
+
+export default {
+  getOverview,
+  articleDetails,
+  articleMarkToRead,
+  articleMarkToUnread,
+  articleMarkWithStar,
+  articleMarkAllAsRead,
+  categoryUpdateOrder,
+  feedChangeCategory
+}
