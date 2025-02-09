@@ -1,7 +1,7 @@
 <template>
   <div class="toolbar">
     <div class="status-toolbar" @click="toggleShowStatus">
-      <p id="status">{{ this.store.currentSelection.status | capitalize }}</p>
+      <p id="status">{{ capitalize(this.store.currentSelection.status) }}</p>
     </div>
     <div v-if="showStatusMenu" class="dropdownmenu" id="status">
       <div class="item" href="#" @click="statusClicked('unread')">
@@ -18,7 +18,7 @@
       </div>
     </div>
     <div class="status-toolbar" @click="toggleShowFilter">
-      <p id="filter">{{ this.store.filter | capitalize }}</p>
+      <p id="filter">{{ capitalize(this.store.filter) }}</p>
     </div>
     <div v-if="showFilterMenu" class="dropdownmenu" id="filter">
       <div class="item" href="#" @click="filterClicked('full')">
@@ -41,6 +41,7 @@
       </div>
     </div>
     <form
+      id="search-form"
       class="search-wrap"
       data-behavior="search_form"
       accept-charset="UTF-8"
@@ -60,36 +61,16 @@
   </div>
 </template>
 
-<style>
+<style scoped>
 .toolbar {
   height: 40px;
   border-bottom: 1px solid transparent;
   border-color: #dcdee0;
-  position: absolute;
   width: 100%;
   overflow: hidden;
   background-color: #eff1f3;
   position: fixed;
   margin-left: -15px;
-}
-
-.search-wrap {
-  width: 50%;
-  float: left;
-}
-
-.search {
-  width: 100%;
-  color: #3399ff;
-  height: 39px;
-  margin: 0;
-  padding: 4px 0px 3px 28px;
-  font-size: 14px;
-  background-color: #eff1f3;
-  border: none;
-  line-height: 1;
-  color: #212325;
-  background: url(../assets/search.svg) 8px 13px no-repeat;
 }
 
 .status-toolbar {
@@ -108,12 +89,35 @@
   margin-top: 5px;
 }
 
+.status-toolbar #status,
+.status-toolbar #filter {
+  width: 50px;
+}
+
+.search-wrap {
+  width: 50%;
+  float: left;
+}
+
+.search {
+  width: 100%;
+  height: 39px;
+  margin: 0;
+  padding: 4px 0px 3px 28px;
+  font-size: 14px;
+  background-color: #eff1f3;
+  border: none;
+  line-height: 1;
+  color: #212325;
+  background: url(../assets/images/search.svg) 8px 13px no-repeat;
+}
+
 .dropdownmenu {
   position: fixed;
   margin-top: 40px;
   background-color: #eff1f3;
   cursor: pointer;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 8px 16px 0px #000000;
   min-width: 100px;
   color: #111;
 }
@@ -132,11 +136,6 @@
   margin-bottom: 0px;
   font-weight: 400;
   font-size: 14px;
-}
-
-.status-toolbar #status,
-.status-toolbar #filter {
-  width: 50px;
 }
 
 #filter.dropdownmenu {
@@ -163,7 +162,6 @@
     border-left: 1px solid #fff;
   }
 }
-
 </style>
 
 <script>
@@ -201,7 +199,12 @@ export default {
       this.showStatusMenu = false;
     },
     statusClicked: function(status) {
-      this.store.currentSelection.status = status;
+      //if user selects current selection, then do a forceReload by emitting an event to parent
+      if (status == this.store.currentSelection.status) {
+        this.$emit('forceReload');
+      } else {
+        this.store.currentSelection.status = status;
+      }
       this.toggleShowStatus();
     },
     filterClicked: function(filter) {
@@ -213,11 +216,11 @@ export default {
       this.toggleShowSort();
     }
   },
-  filters: {
-    capitalize: function(value) {
-      if (!value) return "";
-      value = value.toString();
-      return value.charAt(0).toUpperCase() + value.slice(1);
+  computed:{
+    capitalize() {
+      return (value)=> {
+        return value.charAt(0).toUpperCase() + value.slice(1);
+      }
     }
   }
 };

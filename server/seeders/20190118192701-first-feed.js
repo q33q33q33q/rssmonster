@@ -1,7 +1,4 @@
 'use strict';
-
-const sequelize = require("../util/database");
-
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.bulkInsert('feeds', [{
@@ -10,8 +7,8 @@ module.exports = {
       feedDesc: 'reddit: the front page of the internet',
       url: "https://www.reddit.com/.rss",
       rssUrl: "https://www.reddit.com/.rss",
-      createdAt: sequelize.literal('NOW()'),
-      updatedAt: sequelize.literal('NOW()')
+      createdAt: Sequelize.literal('NOW()'),
+      updatedAt: Sequelize.literal('NOW()')
     }], {});
   },
 

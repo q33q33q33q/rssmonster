@@ -1,34 +1,34 @@
-const bodyParser = require("body-parser");
-const express = require("express");
-const path = require("path");
-const morgan = require('morgan')
+import express from 'express';
+import morgan from 'morgan';
+import bodyParser from 'body-parser';
 
 //set port
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 3000;
 
 //import sequelize
-const sequelize = require("./util/database");
+import sequelize from './util/database.js';
 
 //include models in order to define associations
-const Category = require("./models/category");
-const Feed = require("./models/feed");
-const Article = require("./models/article");
-const Setting = require("./models/setting");
+import Category from './models/category.js';
+import Feed from './models/feed.js';
+import Article from './models/article.js';
 
 //routes
-const categoryRoutes = require("./routes/category");
-const feedRoutes = require("./routes/feed");
-const articleRoutes = require("./routes/article");
-const crawlRoutes = require("./routes/crawl");
-const managerRoutes = require("./routes/manager");
-const settingRoutes = require("./routes/setting");
-const feverRoutes = require("./routes/fever");
+import categoryRoutes from "./routes/category.js";
+import feedRoutes from "./routes/feed.js";
+import articleRoutes from "./routes/article.js";
+import crawlRoutes from "./routes/crawl.js";
+import managerRoutes from "./routes/manager.js";
+import settingRoutes from "./routes/setting.js";
+import feverRoutes from "./routes/fever.js";
+import healthRoutes from "./routes/health.js";
+import cleanupRoutes from "./routes/cleanup.js";
 
 //controller
-const errorController = require("./controllers/error");
+import errorController from "./controllers/error.js";
 
 //init cache
-const cache = require("./util/cache");
+import cache from "./util/cache.js";
 
 const app = express();
 
@@ -58,12 +58,14 @@ app.use("/api/crawl", crawlRoutes);
 app.use("/api/manager", managerRoutes);
 app.use("/api/setting", settingRoutes);
 app.use("/api/fever", feverRoutes);
+app.use("/api/health", healthRoutes);
+app.use("/api/cleanup", cleanupRoutes);
 app.use(errorController.get404);
 
 //define relationships
 Feed.belongsTo(Category, { constraints: true, onDelete: 'CASCADE'});
 Category.hasMany(Feed);
-Article.belongsTo(Feed), { constraints: true, onDelete: 'CASCADE'};
+Article.belongsTo(Feed, { constraints: true, onDelete: 'CASCADE'});
 Feed.hasMany(Article);
 
 sequelize

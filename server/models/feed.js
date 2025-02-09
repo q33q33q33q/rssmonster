@@ -1,13 +1,8 @@
-const Sequelize = require("sequelize");
+import Sequelize from 'sequelize';
+import { sequelize } from '../util/database.js';
+import { Article } from './article.js';
 
-var DataTypes = require("sequelize/lib/data-types");
-
-const sequelize = require("../util/database");
-
-const Category = require("./category");
-const Article = require("./article");
-
-const Feed = sequelize.define(
+export const Feed = sequelize.define(
   "feeds",
   {
     id: {
@@ -15,18 +10,6 @@ const Feed = sequelize.define(
       autoIncrement: true,
       allowNull: false,
       primaryKey: true
-    },
-    // It is possible to create foreign keys:
-    categoryId: {
-      type: Sequelize.INTEGER,
-      allowNull: false,
-      references: {
-        // This is a reference to another model
-        model: Category,
-
-        // This is the column name of the referenced model
-        key: "id"
-      }
     },
     feedName: {
       type: Sequelize.STRING,
@@ -59,5 +42,6 @@ const Feed = sequelize.define(
 
 //add associations
 Feed.hasMany(Article);
+Article.belongsTo(Feed);
 
-module.exports = Feed;
+export default Feed;

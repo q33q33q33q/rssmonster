@@ -1,6 +1,7 @@
 {
   "name": "rssmonster-server",
   "version": "1.0.0",
+  "type": "module",
   "description": "RSS Monster server side",
   "author": "Piethein Strengholt",
   "repository": {
@@ -10,33 +11,35 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js",
+    "start": "node app.js",
     "start-server": "node app.js",
-    "debug": "nodemon -L --inspect app.js"
+    "debug": "nodemon -L --watch app.js",
+    "db": "./node_modules/.bin/sequelize db:migrate"
+  },
+  "engines": {
+    "node": ">=18.x"
   },
   "license": "MIT",
   "devDependencies": {
-    "nodemon": "^2.0.12"
+    "nodemon": "^3.1.9"
   },
   "dependencies": {
-    "body-parser": "^1.19.0",
-    "cheerio": "^1.0.0-rc.10",
-    "dotenv": "^10.0.0",
-    "express": "^4.17.1",
-    "feedparser": "^2.2.10",
-    "franc-min": "^5.0.0",
-    "got": "^11.8.2",
-    "he": "^1.2.0",
-    "htmlparser2": "^6.1.0",
+    "@rowanmanning/feed-parser": "^1.1.1",
+    "body-parser": "^1.20.3",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "franc-min": "^6.2.0",
+    "htmlparser2": "^10.0.0",
     "morgan": "^1.10.0",
-    "mysql2": "^2.3.0",
+    "mysql2": "^3.12.0",
     "node-cache": "^5.1.2",
-    "node-fetch": "^2.6.1",
-    "sequelize": "^6.6.5",
-    "sequelize-cli": "^6.2.0",
+    "node-fetch": "^3.3.2",
+    "sequelize": "^6.37.5",
+    "sequelize-cli": "^6.6.2",
     "striptags": "^3.2.0"
   },
   "optionalDependencies": {
-    "fsevents": "^2.3.2"
+    "fsevents": "^2.3.3"
   }
 }

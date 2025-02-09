@@ -1,10 +1,8 @@
-const Sequelize = require("sequelize");
+import Sequelize from 'sequelize';
+import { sequelize } from '../util/database.js';
+import { Feed } from './feed.js';
 
-const sequelize = require("../util/database");
-
-const Feed = require("./feed");
-
-const Category = sequelize.define(
+export const Category = sequelize.define(
   "categories",
   {
     id: {
@@ -28,7 +26,8 @@ const Category = sequelize.define(
   }
 );
 
-//add feed associations
+//add associations
 Category.hasMany(Feed);
+Feed.belongsTo(Category);
 
-module.exports = Category;
+export default Category;

@@ -1,10 +1,10 @@
-const Feed = require("../models/feed");
-const Article = require("../models/article");
+import Feed from "../models/feed.js";
+import Article from "../models/article.js";
 
-const autodiscover = require("../util/autodiscover");
-const parseFeed = require("../util/parser");
+import discoverRssLink from "../util/discoverRssLink.js";
+import parseFeed from "../util/parser.js";
 
-exports.getFeeds = async (req, res, next) => {
+const getFeeds = async (req, res, next) => {
   try {
     const feeds = await Feed.findAll();
     return res.status(200).json({
@@ -17,7 +17,7 @@ exports.getFeeds = async (req, res, next) => {
   }
 };
 
-exports.getFeed = async (req, res, next) => {
+const getFeed = async (req, res, next) => {
   const feedId = req.params.feedId;
   try {
     const feed = await Feed.findByPk(feedId);
@@ -30,15 +30,8 @@ exports.getFeed = async (req, res, next) => {
   }
 };
 
-exports.updateFeed = async (req, res, next) => {
+const updateFeed = async (req, res, next) => {
   const feedId = req.params.feedId;
-  const feedName = req.body.feedName;
-  const feedDesc = req.body.feedDesc;
-  const categoryId = req.body.categoryId;
-  const url = req.body.url;
-  const rssUrl = req.body.rssUrl;
-  const favicon = req.body.favicon;
-  const active = req.body.active;
   try {
     const feed = await Feed.findByPk(feedId);
     if (!feed) {
@@ -65,23 +58,16 @@ exports.updateFeed = async (req, res, next) => {
   }
 };
 
-exports.newFeed = async (req, res, next) => {
-  const feedName = req.body.feedName;
-  const feedDesc = req.body.feedDesc;
-  const categoryId = req.body.categoryId;
-  const url = req.body.url;
-  const rssUrl = req.body.rssUrl;
-  const favicon = req.body.favicon;
-  const active = req.body.active;
+const newFeed = async (req, res, next) => {
   try {
     const feed = await Feed.create({
-      categoryId: categoryId,
-      feedName: feedName,
-      feedDesc: feedDesc,
-      url: url,
-      rssUrl: rssUrl,
-      favicon: favicon,
-      active: active
+      categoryId: req.body.categoryId,
+      feedName: req.body.feedName,
+      feedDesc: req.body.feedDesc,
+      url: req.body.url,
+      rssUrl: req.body.rssUrl,
+      favicon: req.body.favicon,
+      active: req.body.active
     });
     return res.status(200).json(feed);
   } catch (err) {
@@ -90,16 +76,15 @@ exports.newFeed = async (req, res, next) => {
   }
 };
 
-exports.deleteFeed = async (req, res, next) => {
+const deleteFeed = async (req, res, next) => {
   const feedId = req.params.feedId;
   try {
-    feed = await Feed.findByPk(feedId);
+    var feed = await Feed.findByPk(feedId);
     if (!feed) {
       return res.status(400).json({
         message: "Feed not found"
       });
-    }
-    if (feed) {
+    } else {
       //delete all articles
       Article.destroy({
         where: {
@@ -118,11 +103,23 @@ exports.deleteFeed = async (req, res, next) => {
   }
 };
 
-exports.validateFeed = async (req, res, next) => {
+const validateFeed = async (req, res, next) => {
+
   //resolve url
-  const origUrl = req.body.url;
-  const url = await autodiscover.discover(req.body.url);
+  const url = await discoverRssLink.discoverRssLink(req.body.url);
   const categoryId = req.body.categoryId;
+
+  if (typeof url === "undefined") {
+    return res.status(500).json({
+      error_msg: "Feed url is invalid. Are you sure the RSS feed is correct?"
+    });
+  }
+
+  if (typeof categoryId === "undefined") {
+    return res.status(500).json({
+      error_msg: "Category is invalid."
+    });
+  }
 
   try {
 
@@ -132,17 +129,16 @@ exports.validateFeed = async (req, res, next) => {
       //add feed
       Feed.findOne({
         where: {
-          url: feeditem.meta.xmlurl
+          url: feeditem.self
         }
       }).then(feed => {
-        if (!feed) {
-          return res.status(200).json({
+        if (!feed) {          return res.status(200).json({
             categoryId: categoryId,
-            feedName: feeditem.meta.title,
-            feedDesc: feeditem.meta.description,
+            feedName: feeditem.title || feeditem.meta.title,
+            feedDesc: feeditem.description || feeditem.meta.description,
             url: req.body.url,
-            rssUrl: feeditem.meta.xmlurl,
-            favicon: feeditem.meta.favicon
+            rssUrl: feeditem.self,
+            favicon: feeditem.image
           });
         } else {
           return res.status(402).json({
@@ -163,3 +159,12 @@ exports.validateFeed = async (req, res, next) => {
     });
   }
 };
+
+export default {
+  getFeeds,
+  getFeed,
+  updateFeed,
+  newFeed,
+  deleteFeed,
+  validateFeed
+}

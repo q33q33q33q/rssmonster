@@ -1,28 +1,36 @@
 <template>
   <div id="app">
     <div class="row">
-      <div class="sidebar col-md-3 col-sm-0">
-        <app-sidebar @modal="modalClick"></app-sidebar>
+      <div id="sidebar" class="col-md-3 col-sm-0">
+        <!-- Sidebar events -->
+        <app-sidebar ref="sidebar" @modal="modalClick" @forceReload="forceReload"></app-sidebar>
       </div>
-      <div class="home col-md-9 offset-md-3 col-sm-12">
-        <app-quickbar @mobile="mobileClick"></app-quickbar>
-        <app-toolbar class="toolbar"></app-toolbar>
+      <div id="home" class="col-md-9 offset-md-3 col-sm-12">
+        <!-- Quickbar events -->
+        <app-quickbar @mobile="mobileClick" @forceReload="forceReload"></app-quickbar>
+        <!-- Toolbar events -->
+        <app-toolbar id="toolbar" @forceReload="forceReload"></app-toolbar>
           <p class="offline" v-show="offlineStatus">Application is currently offline!</p>
-        <app-home></app-home>
+        <!-- Add reference to home for calling child loadContent component function -->
+        <app-home ref="home"></app-home>
       </div>
     </div>
-    <!-- Modal -->
+    <!-- Modal events -->
     <app-modal @modal="modalClick" :modal="modal" :input-category="category" :input-feed="feed"></app-modal>
-    <!-- Mobile Pop-up -->
-    <app-mobile :mobile="mobile" @mobile="mobileClick" @modal="modalClick"></app-mobile>
+    <!-- Mobile events -->
+    <app-mobile :mobile="mobile" @mobile="mobileClick" @modal="modalClick" @refresh="refreshFeeds"></app-mobile>
   </div>
 </template>
+
+<style lang="scss">
+@import "./assets/scss/global.scss";
+</style>
 
 <style>
 /* Landscape phones and portrait tablets */
 @media (max-width: 766px) {
-  div.sidebar,
-  div.toolbar {
+  #sidebar,
+  #toolbar {
     display: none;
   }
 
@@ -30,7 +38,7 @@
     padding-right: 0px;
   }
 
-  div.quickbar {
+  div#mobile-toolbar {
     position: fixed;
     z-index: 9999;
   }
@@ -38,19 +46,19 @@
 
 /* Desktop */
 @media (min-width: 766px) {
-  div.quickbar {
+  div#mobile-toolbar {
     display: none;
   }
 
-  div.sidebar {
+  #sidebar {
     height: 100%;
-    background-color: #31344b;
+    background-color: #e3e3e3;
     overflow-y: auto;
     overflow-x: hidden;
   }
 
   @media (prefers-color-scheme: dark) {
-    div.sidebar {
+    #sidebar {
       background-color: #2c2c2c;
     }
   }
@@ -60,7 +68,7 @@ div.row {
   margin-right: 0px;
 }
 
-div.sidebar {
+#sidebar {
   position: fixed;
 }
 
@@ -70,7 +78,11 @@ p.offline {
 }
 
 html, #app {
-  background-color: #f9f9f9;
+  background-color: #d6d6d6;
+}
+
+html, #app, body {
+    height: 100%;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -78,7 +90,7 @@ html, #app {
     background-color: #121212;
   }
 
-  div.home {
+  #home {
     background: black;
   }
 
@@ -98,16 +110,20 @@ html, #app {
 
 <script>
 import store from "./store";
+import axios from 'axios';
 
 //import idb-keyval
 import { get, set } from 'idb-keyval';
 
 import Home from "./components/Home.vue";
-const Sidebar = () => import(/* webpackChunkName: "sidebar" */ "./components/Sidebar.vue");
-const Toolbar = () => import(/* webpackChunkName: "toolbar" */ "./components/Toolbar.vue");
-const Quickbar = () => import(/* webpackChunkName: "quickbar" */ "./components/Quickbar.vue");
-const Modal = () => import(/* webpackChunkName: "modal" */ "./components/Modal.vue");
-const Mobile = () => import(/* webpackChunkName: "mobile" */ "./components/Mobile.vue");
+
+//import components
+import { defineAsyncComponent } from 'vue'
+const Sidebar = defineAsyncComponent(() => import(/* webpackChunkName: "sidebar" */ "./components/Sidebar.vue"));
+const Toolbar = defineAsyncComponent(() =>  import(/* webpackChunkName: "toolbar" */ "./components/Toolbar.vue"));
+const Quickbar = defineAsyncComponent(() =>  import(/* webpackChunkName: "quickbar" */ "./components/Quickbar.vue"));
+const Modal = defineAsyncComponent(() =>  import(/* webpackChunkName: "modal" */ "./components/Modal.vue"));
+const Mobile = defineAsyncComponent(() =>  import(/* webpackChunkName: "mobile" */ "./components/Mobile.vue"));
 
 export default {
   components: {
@@ -129,7 +145,10 @@ export default {
       offlineStatus: false
     };
   },
-  created: function() {
+  created: async function() {
+    //reset newUnreads count to zero
+    this.store.newUnreads = 0;
+
     //fetch all category and feed information for an complete overview including total read and unread counts
     this.getOverview(true);
 
@@ -157,11 +176,10 @@ export default {
       //save reference to 'this', while it's still this!
       var self = this;
 
-      //background update overview every fifteen minutes
+      //background update overview every five minutes
       setInterval(function() {
         self.getOverview(false);
-      }, 900 * 1000);
-
+      }, 300 * 1000);
     }
 
     //default body background color to black for dark mode.
@@ -241,39 +259,44 @@ export default {
         }
       }
     },
-    getOverview: function(initial) {
+    getOverview: async function(initial) {
       //get an overview with the count for all feeds
-      this.$http
-        .get("api/manager/overview")
+      await axios
+        .get(import.meta.env.VITE_VUE_APP_HOSTNAME + "/api/manager/overview")
         .then(response => {
-          return response.json();
+          return response;
         })
-        .then(data => {
+        .then(response => {
           //set offlineStatus to false
           this.offlineStatus = false;
 
           //update the store counts
           var previousUnreadCount = this.store.unreadCount;
-          this.store.unreadCount = data.unreadCount;
-          this.store.readCount = data.readCount;
-          this.store.starCount = data.starCount;
-          this.store.hotCount = data.hotCount;
+          this.store.unreadCount = response.data.unreadCount;
+          this.store.readCount = response.data.readCount;
+          this.store.starCount = response.data.starCount;
+          this.store.hotCount = response.data.hotCount;
 
           //set PWA badge using unread count
           if ('Notification' in window && 'serviceWorker' in navigator && 'indexedDB' in window) {
-            navigator.setAppBadge(data.unreadCount);
+            navigator.setAppBadge(response.data.unreadCount);
           }
 
           //update the categories in the store
-          this.store.categories = data.categories;
+          this.store.categories = response.data.categories;
+
+          //update newUnreads count, so we could show a message that new content is ready
+          if (!initial) {
+            this.store.newUnreads = response.data.unreadCount - previousUnreadCount;
+          }
 
           //update local category and feed based on current selection
           if (initial === true) {
-            this.updateSelection(this.store.currentSelection);  
+            this.updateSelection(this.store.currentSelection);
           } else {
-            //only show notifcation when new messages have arrived (previousUnreadCount is larger than current unreadCount)
-            if (previousUnreadCount < data.unreadCount) {
-              this.showNotification(data.unreadCount - previousUnreadCount);
+            //only show notification when new messages have arrived (previousUnreadCount is larger than current unreadCount)
+            if (previousUnreadCount < response.data.unreadCount) {
+              this.showNotification(response.data.unreadCount - previousUnreadCount);
             }
           }
         })
@@ -282,16 +305,30 @@ export default {
           this.offlineStatus = true;
         });
     },
-    showNotification(input) {
+    showNotification: async function (input) {
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready // returns a Promise, the active SW registration
-          .then(swreg => swreg.showNotification('New articles', {
-            body: input + ' new articles arrived',
-            icon: '/img/icons/android-icon-192x192.png',
-            vibrate: [300, 200, 300]
-        }))
+        if(Notification.permission === 'granted') {
+          navigator.serviceWorker.ready // returns a Promise, the active SW registration
+            .then(swreg => swreg.showNotification('New articles', {
+              body: input + ' new articles arrived',
+              icon: '/img/icons/android-icon-192x192.png',
+              vibrate: [300, 200, 300]
+          }))
+        }
       }
-    }
+    },
+    forceReload: function(data) {
+      //set newUnreads count back to zero. This removes the notification from the Sidebar.
+      this.store.newUnreads = 0;
+      //refresh the overview with updated categories and feeds counts
+      this.getOverview(true);
+      //invoke ref home child component function to reload content
+      this.$refs.home.fetchArticleIds(this.store.currentSelection);
+    },
+    refreshFeeds() {
+      //call sidebar refreshFeeds function
+      this.$refs.sidebar.refreshFeeds();
+    },
   },
   //watch the store.currentSelection, set local data (category, feed) based on current selection
   watch: {
@@ -304,22 +341,26 @@ export default {
     "store.currentSelection.categoryId": {
       handler: function() {
         this.feed = {};
-      }
+      },
+      deep: true
     },
     "store.currentSelection.feedId": {
       handler: function() {
         this.closeModal();
-      }
+      },
+      deep: true
     },
     "store.currentSelection.filter": {
       handler: function() {
         this.closeModal();
-      }
+      },
+      deep: true
     },
     "store.currentSelection.status": {
       handler: function() {
         this.closeModal();
-      }
+      },
+      deep: true
     },
     "store.unreadCount": {
       handler: function(count) {
@@ -327,7 +368,8 @@ export default {
         if ('serviceWorker' in navigator) {
           navigator.setAppBadge(count);
         }
-      }
+      },
+      deep: true
     }
   }
 };
